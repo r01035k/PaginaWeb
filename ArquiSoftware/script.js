@@ -1,135 +1,126 @@
-// ===== IMPORTAR SUPABASE =====
-import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm'
+// ================== CONFIGURACIÓN SUPABASE ==================
+const SUPABASE_URL = 'https://zqowhanlhhjueqprxrvt.supabase.co';
+const SUPABASE_KEY = 'zrf!MtWip&fc85U'; // reemplaza con tu anon key
+const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-// ===== CONFIGURACIÓN SUPABASE =====
-const SUPABASE_URL = 'https://zqowhanlhhjueqprxrvt.supabase.co'
-const SUPABASE_KEY = 'TU_ANON_KEY_AQUI' // ← reemplaza esto con tu anon public key
-const supabase = createClient(SUPABASE_URL, SUPABASE_KEY)
+// ================== ELEMENTOS DEL DOM ==================
+const btnLogin = document.getElementById('btn-login');
+const loginPopup = document.getElementById('login-popup');
+const loginForm = document.querySelector('.login-form');
+const subirBtn = document.getElementById('subir-doc');
+const galeria = document.querySelector('.galeria');
+const body = document.body;
 
-// ===== ELEMENTOS DEL DOM =====
-const btnLogin = document.getElementById('btn-login')
-const loginPopup = document.getElementById('login-popup')
-const loginForm = document.querySelector('.login-form')
-const subirBtn = document.getElementById('subir-doc')
-const galeria = document.querySelector('.galeria')
-const body = document.body
-const mensaje = document.getElementById('mensaje')
+// ================== ADMIN ==================
+const ADMIN_EMAIL = "geison.c.samaniego@gmail.com";
+const ADMIN_PASSWORD = "123456789";
 
-// ===== CREDENCIALES ADMIN =====
-const ADMIN_EMAIL = "geison.c.samaniego@gmail.com"
-const ADMIN_PASSWORD = "123456789"
-
-// ===== FUNCIONES AUXILIARES =====
-function mostrarMensaje(texto) {
-  mensaje.textContent = texto
-  mensaje.classList.remove('oculto')
-  mensaje.classList.add('visible')
-
-  setTimeout(() => {
-    mensaje.classList.remove('visible')
-    mensaje.classList.add('oculto')
-  }, 3000)
-}
-
-// ===== LOGIN POPUP =====
+// ================== POPUP LOGIN ==================
 btnLogin.addEventListener('click', () => {
-  loginPopup.classList.remove('oculto')
-  loginPopup.classList.add('visible')
-  body.style.filter = 'brightness(0.4)'
-})
+    loginPopup.classList.add('visible');
+    body.style.filter = 'brightness(0.4)';
+});
 
 loginPopup.addEventListener('click', (e) => {
-  if (e.target === loginPopup) {
-    loginPopup.classList.add('oculto')
-    loginPopup.classList.remove('visible')
-    body.style.filter = 'brightness(1)'
-  }
-})
+    if(e.target === loginPopup){
+        loginPopup.classList.remove('visible');
+        body.style.filter = 'brightness(1)';
+    }
+});
 
-// ===== LOGIN VALIDACIÓN =====
+// ================== LOGIN ==================
 loginForm.addEventListener('submit', async (e) => {
-  e.preventDefault()
-  const email = loginForm.querySelector('input[type="email"]').value
-  const password = loginForm.querySelector('input[type="password"]').value
+    e.preventDefault();
+    
+    const email = loginForm.querySelector('input[type="email"]').value;
+    const password = loginForm.querySelector('input[type="password"]').value;
 
-  if (email === ADMIN_EMAIL && password === ADMIN_PASSWORD) {
-    mostrarMensaje("Sesión iniciada como administrador")
-    subirBtn.style.display = 'block'
-  } else {
-    mostrarMensaje("Sesión iniciada como visitante")
-    subirBtn.style.display = 'none'
-  }
-
-  loginPopup.classList.add('oculto')
-  loginPopup.classList.remove('visible')
-  body.style.filter = 'brightness(1)'
-
-  cargarDocumentos()
-})
-
-// ===== SUBIR DOCUMENTO =====
-subirBtn.addEventListener('click', async () => {
-  const semana = prompt("¿A qué semana deseas subir el documento? (1 al 16)")
-  if (!semana || isNaN(semana) || semana < 1 || semana > 16) {
-    mostrarMensaje("Semana inválida")
-    return
-  }
-
-  const input = document.createElement('input')
-  input.type = 'file'
-  input.accept = '.pdf'
-  input.click()
-
-  input.addEventListener('change', async () => {
-    const file = input.files[0]
-    if (!file) return
-
-    const filePath = `semana-${semana}/${file.name}`
-    const { data, error } = await supabase.storage
-      .from('documentos')
-      .upload(filePath, file, { upsert: true })
-
-    if (error) {
-      console.error("Error al subir:", error)
-      mostrarMensaje("Error al subir el documento.")
+    if(email === ADMIN_EMAIL && password === ADMIN_PASSWORD){
+        alert("Has iniciado sesión como admin");
+        subirBtn.style.display = 'block';
     } else {
-      mostrarMensaje("Documento subido a semana " + semana)
-      cargarDocumentos()
+        alert("Has iniciado sesión como usuario visitante");
+        subirBtn.style.display = 'none';
     }
-  })
-})
 
-// ===== CARGAR DOCUMENTOS POR SEMANA =====
-async function cargarDocumentos() {
-  galeria.innerHTML = ''
+    loginPopup.classList.remove('visible');
+    body.style.filter = 'brightness(1)';
 
-  for (let i = 1; i <= 16; i++) {
+    cargarDocumentos();
+});
+
+// ================== SUBIR DOCUMENTOS ==================
+subirBtn.addEventListener('click', async () => {
+    // Elegir semana
+    const semana = prompt("Ingresa la semana (1 a 16) donde quieres subir el documento:");
+    if(!semana || semana < 1 || semana > 16){
+        alert("Semana inválida");
+        return;
+    }
+
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = '.pdf';
+    input.multiple = true;
+    input.click();
+
+    input.addEventListener('change', async () => {
+        const files = input.files;
+        for(let i=0; i<files.length; i++){
+            const file = files[i];
+            const nombreArchivo = `Semana${semana}_${file.name}`;
+            const { data, error } = await supabase.storage
+                .from('documentos')
+                .upload(nombreArchivo, file, { upsert: true });
+
+            if(error){
+                console.error(error);
+                alert(`Error al subir: ${file.name}`);
+            }
+        }
+        cargarDocumentos();
+    });
+});
+
+// ================== CARGAR DOCUMENTOS ==================
+async function cargarDocumentos(){
     const { data, error } = await supabase.storage
-      .from('documentos')
-      .list(`semana-${i}`, { limit: 100 })
+        .from('documentos')
+        .list('', { limit: 100 });
 
-    const div = document.createElement('div')
-    div.classList.add('proyecto')
-    div.innerHTML = `<div class="overlay"><h3>Semana ${i}</h3></div>`
-
-    if (data && data.length > 0) {
-      data.forEach(doc => {
-        const url = supabase.storage
-          .from('documentos')
-          .getPublicUrl(`semana-${i}/${doc.name}`).data.publicUrl
-
-        const enlace = document.createElement('a')
-        enlace.href = url
-        enlace.textContent = doc.name
-        enlace.target = '_blank'
-        enlace.style.display = 'block'
-        enlace.style.color = '#fff'
-        enlace.style.marginTop = '5px'
-
-        div.querySelector('.overlay').appendChild(enlace)
-      })
+    if(error){
+        console.error(error);
+        return;
     }
 
-    galeria.appendChild(div)
-  }
+    galeria.innerHTML = '';
+
+    // Organizar por semana
+    const semanas = {};
+    data.forEach(doc => {
+        const match = doc.name.match(/^Semana(\d+)_/);
+        const numSemana = match ? parseInt(match[1]) : 0;
+        if(!semanas[numSemana]) semanas[numSemana] = [];
+        semanas[numSemana].push(doc);
+    });
+
+    for(let i=1; i<=16; i++){
+        const docs = semanas[i] || [];
+        const divSemana = document.createElement('div');
+        divSemana.classList.add('proyecto');
+        divSemana.innerHTML = `<div class="overlay"><h3>Semana ${i}</h3></div>`;
+        docs.forEach(doc => {
+            const url = supabase.storage.from('documentos').getPublicUrl(doc.name).data.publicUrl;
+            const a = document.createElement('a');
+            a.href = url;
+            a.target = "_blank";
+            a.textContent = doc.name.replace(`Semana${i}_`, '');
+            divSemana.appendChild(a);
+            divSemana.appendChild(document.createElement('br'));
+        });
+        galeria.appendChild(divSemana);
+    }
 }
+
+// ================== CARGAR DOCUMENTOS AL INICIO ==================
+cargarDocumentos();
