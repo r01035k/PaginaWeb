@@ -1,6 +1,7 @@
 // ================== CONFIGURACIÓN SUPABASE ==================
 const SUPABASE_URL = 'https://zqowhanlhhjueqprxrvt.supabase.co';
-const SUPABASE_KEY = 'zrf!MtWip&fc85U'; // reemplaza con tu anon key
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inpxb3doYW5saGhqdWVxcHJ4cnZ0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTgyNTQ3MDQsImV4cCI6MjA3MzgzMDcwNH0.gqUUKlZXow6UpVrEWd77XPbZO4p0IiDdZ5Cq3QMY178';
+
 const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
 // ================== ELEMENTOS DEL DOM ==================
@@ -124,3 +125,4 @@ async function cargarDocumentos(){
 
 // ================== CARGAR DOCUMENTOS AL INICIO ==================
 cargarDocumentos();
+
